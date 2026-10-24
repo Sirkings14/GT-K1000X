@@ -1,4 +1,4 @@
-name: Daily paper signal scan
+name: Daily football market scan
 
 on:
   schedule:
@@ -17,12 +17,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Run paper scanner
+      - name: Run major European league scan
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          SPORT_KEY: soccer_epl
+          SPORT_KEYS: soccer_epl,soccer_spain_la_liga,soccer_germany_bundesliga,soccer_italy_serie_a,soccer_france_ligue_one
           REGIONS: uk,eu
           MIN_BOOKMAKERS: "3"
           MIN_EDGE: "0.04"
