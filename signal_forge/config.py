@@ -4,6 +4,14 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+DEFAULT_SPORT_KEYS = (
+    "soccer_epl",
+    "soccer_spain_la_liga",
+    "soccer_germany_bundesliga",
+    "soccer_italy_serie_a",
+    "soccer_france_ligue_one",
+)
+
 
 def load_dotenv(path: Path = Path(".env")) -> None:
     if not path.exists():
@@ -20,7 +28,7 @@ class Settings:
     odds_api_key: str
     telegram_bot_token: str
     telegram_chat_id: str
-    sport_key: str = "soccer_epl"
+    sport_keys: tuple[str, ...] = DEFAULT_SPORT_KEYS
     regions: str = "uk,eu"
     min_bookmakers: int = 3
     min_edge: float = 0.04
@@ -31,11 +39,14 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         load_dotenv()
+        sport_keys = tuple(
+            key.strip() for key in os.getenv("SPORT_KEYS", ",".join(DEFAULT_SPORT_KEYS)).split(",") if key.strip()
+        )
         values = {
             "odds_api_key": os.getenv("ODDS_API_KEY", ""),
             "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
             "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
-            "sport_key": os.getenv("SPORT_KEY", "soccer_epl"),
+            "sport_keys": sport_keys,
             "regions": os.getenv("REGIONS", "uk,eu"),
             "min_bookmakers": int(os.getenv("MIN_BOOKMAKERS", "3")),
             "min_edge": float(os.getenv("MIN_EDGE", "0.04")),
@@ -46,4 +57,6 @@ class Settings:
         missing = [name for name in ("odds_api_key", "telegram_bot_token", "telegram_chat_id") if not values[name]]
         if missing:
             raise ValueError("Missing required settings: " + ", ".join(missing))
+        if not sport_keys:
+            raise ValueError("SPORT_KEYS must contain at least one sport key")
         return cls(**values)
