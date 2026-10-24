@@ -1,28 +1,29 @@
-# GT-K1000X — Signal Forge
+# GT-K1000X — Football Market Signal Engine
 
-A transparent, **paper-only** football value scanner that sends daily Telegram reports. It does not place bets, scrape bookmaker sites, or guarantee profit.
+A football market-signal service for the Premier League, La Liga, Bundesliga, Serie A, and Ligue 1. It sends a daily Telegram report; it does not automate bet placement.
 
-## What it does
+## Markets scanned
 
-- Fetches 1X2 football odds from The Odds API.
-- Removes bookmaker overround, then uses the median fair probability across multiple books.
-- Line-shops the best available decimal price and filters by expected value.
-- Computes a capped quarter-Kelly **paper stake reference** and writes every emitted signal to an audit ledger.
-- Sends either qualifying research signals or an explicit no-signal report to Telegram.
+- **1X2:** home win, draw, away win.
+- **Goals O/U:** bookmaker totals such as over/under 2.5.
+- **Handicaps:** bookmaker spread/handicap markets.
 
-## Launch
+The Odds API feed currently powers quoted prices. Double chance, cards, corners, and player props are excluded until a provider delivers actual prices for those markets; a model probability alone cannot establish a tradable edge.
 
-1. Install Python 3.11+.
-2. Copy `.env.example` to `.env` and set `ODDS_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_CHAT_ID`.
-3. Run `python -m unittest discover -s tests -v`.
-4. Run `python -m signal_forge.main`.
+## How a signal is ranked
 
-Add those same values as GitHub Actions secrets, then enable the daily workflow. It runs at 08:00 UTC and supports manual dispatch.
+The engine removes each bookmaker's margin, takes the median fair probability across at least three books, finds the best available price, requires a configurable expected-value threshold, and limits each stake reference to capped quarter-Kelly sizing. Every delivered signal is timestamped for audit and later closing-line-value review.
 
-## Guardrails
+## Run through GitHub only
 
-This is research tooling, not betting advice. Positive expected value estimated from public prices is uncertain; validate with a large, timestamped sample and positive closing-line value before considering any real-money use. Obey local law and only use money you can afford to lose.
+Add `ODDS_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_CHAT_ID` as GitHub Actions secrets. Then manually run **Actions → Daily football market scan → Run workflow**. The schedule runs at 08:00 UTC daily.
+
+With `uk,eu`, the feed uses two odds credits per league for one market call. The five-league daily scan therefore uses roughly ten credits per run. Set `REGIONS=uk` to reduce usage if needed.
+
+## Risk
+
+Market signals are uncertain and quoted prices can move or be unavailable. Verify the price and availability yourself, obey local law, and never risk more than you can afford to lose.
 
 ## Research lineage
 
-No third-party source code was copied. The architecture was informed by MIT-licensed projects including [value-bet-model](https://github.com/mperi1208/value-bet-model), [value-betting-scanner](https://github.com/zakariae-boui/value-betting-scanner), and [smart-odds](https://github.com/sparegk/smart-odds). Their claims are not independently verified and are not a forecast of performance.
+No third-party source code was copied. The architecture was informed by MIT-licensed projects including [value-bet-model](https://github.com/mperi1208/value-bet-model), [value-betting-scanner](https://github.com/zakariae-boui/value-betting-scanner), and [smart-odds](https://github.com/sparegk/smart-odds).
