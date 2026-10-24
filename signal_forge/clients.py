@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -8,8 +9,14 @@ from urllib.request import Request, urlopen
 def _request_json(url: str, method: str = "GET", payload: dict | None = None) -> dict | list:
     data = json.dumps(payload).encode("utf-8") if payload else None
     request = Request(url, data=data, method=method, headers={"Content-Type": "application/json"})
-    with urlopen(request, timeout=30) as response:
-        return json.loads(response.read().decode("utf-8"))
+    try:
+        with urlopen(request, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"HTTP {error.code} calling {url}: {detail}") from error
+    except URLError as error:
+        raise RuntimeError(f"Network error calling {url}: {error.reason}") from error
 
 
 def fetch_odds(api_key: str, sport_key: str, regions: str) -> list[dict]:
